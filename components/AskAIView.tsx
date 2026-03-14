@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
     Send, Zap, BookOpen, Lightbulb, Loader2, RefreshCcw,
     ImagePlus, X, Type, Camera, ListOrdered, Brain, CheckCircle2, AlertCircle
@@ -48,7 +48,12 @@ const EXAMPLE_PROMPTS = [
     "What is Ohm's Law? Give an example.",
 ];
 
-export default function AskAIView({ classroomId = null, onSuccess }: { classroomId?: number | null, onSuccess?: () => void }) {
+export default function AskAIView({ classroomId = null, onSuccess, initialDoubt }: { 
+    classroomId?: number | null, 
+    onSuccess?: () => void,
+    initialDoubt?: any 
+}) {
+    const containerRef = useRef<HTMLDivElement>(null);
     const [inputMode, setInputMode] = useState<'text' | 'image'>('text');
     const [prompt, setPrompt] = useState('');
     const [imageBase64, setImageBase64] = useState<string | null>(null);
@@ -59,6 +64,45 @@ export default function AskAIView({ classroomId = null, onSuccess }: { classroom
     const [isVideoLoading, setIsVideoLoading] = useState(false);
     const [videoUrl, setVideoUrl] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        if (initialDoubt) {
+            setPrompt(initialDoubt.content === "Visual Inquiry" ? "" : initialDoubt.content);
+            setImageBase64(initialDoubt.imageUrl);
+            setResponse(null);
+            setErrorMsg(null);
+            setVideoUrl(null);
+
+            // Fetch the solution from replies
+            const fetchSolution = async () => {
+                setIsLoading(true);
+                try {
+                    const res = await fetch(`/api/replies?doubtId=${initialDoubt.id}`);
+                    const data = await res.json();
+                    if (res.ok && data.length > 0) {
+                        // Find the AI solution reply
+                        const solution = data.find((r: any) => r.type === 'solution' || r.userName === 'DoubtDesk AI');
+                        if (solution) {
+                            setResponse(solution.content);
+                        } else {
+                            setErrorMsg("No solution found for this query.");
+                        }
+                    } else {
+                        setErrorMsg("Could not retrieve the solution.");
+                    }
+                } catch (err) {
+                    setErrorMsg("Connection error while fetching solution.");
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+
+            fetchSolution();
+            
+            // Smooth scroll to the top of the component
+            containerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }, [initialDoubt]);
 
     const handleGenerateVideo = async () => {
         if (!response) return;
@@ -118,7 +162,7 @@ export default function AskAIView({ classroomId = null, onSuccess }: { classroom
     const sections = response ? parseSections(response) : [];
 
     return (
-        <div className="space-y-8 text-left">
+        <div ref={containerRef} className="space-y-8 text-left scroll-mt-24">
             <div className="bg-slate-900/60 border border-white/8 rounded-3xl overflow-hidden shadow-2xl">
                 <div className="flex border-b border-white/5">
                     <button

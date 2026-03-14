@@ -23,7 +23,7 @@ export async function checkUserBlock(email: string) {
     
     return { 
         isBlocked: false, 
-        errorResponse: null, 
+        errorResponse: undefined, 
         dbUser: user 
     };
 }

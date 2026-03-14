@@ -9,10 +9,11 @@ import { toast } from "sonner";
 interface DoubtCardProps {
     doubt: any;
     onUpdate?: () => void;
+    onViewAISolution?: (doubt: any) => void;
     role?: string;
 }
 
-export default function DoubtCard({ doubt, onUpdate, role }: DoubtCardProps) {
+export default function DoubtCard({ doubt, onUpdate, onViewAISolution, role }: DoubtCardProps) {
     const [isOwner, setIsOwner] = useState(false);
     const [isLiking, setIsLiking] = useState(false);
     const [isSolving, setIsSolving] = useState(false);
@@ -180,7 +181,13 @@ export default function DoubtCard({ doubt, onUpdate, role }: DoubtCardProps) {
 
                         {doubt.isSolved === "solved" && (
                             <button 
-                                onClick={() => setIsRepliesOpen(true)}
+                                onClick={() => {
+                                    if (doubt.type === 'ai' && onViewAISolution) {
+                                        onViewAISolution(doubt);
+                                    } else {
+                                        setIsRepliesOpen(true);
+                                    }
+                                }}
                                 className="flex-[2] sm:flex-none flex items-center justify-center gap-3 px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl transition-all shadow-2xl shadow-emerald-500/30 active:scale-95 group/sol whitespace-nowrap"
                             >
                                 <CheckCircle className="w-4 h-4 fill-white/20 group-hover/sol:scale-110 transition-transform flex-shrink-0" />

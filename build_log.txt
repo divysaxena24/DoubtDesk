@@ -1,0 +1,27 @@
+
+> nextjs-boilerplate-1@0.1.0 build
+> next build
+
+  Γû▓ Next.js 14.2.15
+  - Environments: .env
+
+   Creating an optimized production build ...
+ Γ£ô Compiled successfully
+   Linting and checking validity of types ...
+Failed to compile.
+
+.next/types/app/api/ai-career-chat-agent/history/route.ts:59:7
+Type error: Type '{ __tag__: "GET"; __return_type__: Promise<NextResponse<{ id: number; chatId: string; chatTitle: string | null; userEmail: string; role: string; content: string; createdAt: Date; }[]> | NextResponse<...> | NextResponse<...> | null>; }' does not satisfy the constraint '{ __tag__: "GET"; __return_type__: void | Response | Promise<void | Response>; }'.
+  Types of property '__return_type__' are incompatible.
+    Type 'Promise<NextResponse<{ id: number; chatId: string; chatTitle: string | null; userEmail: string; role: string; content: string; createdAt: Date; }[]> | NextResponse<{ chatId: string; chatTitle: string; createdAt: string; }[]> | NextResponse<...> | null>' is not assignable to type 'void | Response | Promise<void | Response>'.
+      Type 'Promise<NextResponse<{ id: number; chatId: string; chatTitle: string | null; userEmail: string; role: string; content: string; createdAt: Date; }[]> | NextResponse<{ chatId: string; chatTitle: string; createdAt: string; }[]> | NextResponse<...> | null>' is not assignable to type 'Promise<void | Response>'.
+        Type 'NextResponse<{ id: number; chatId: string; chatTitle: string | null; userEmail: string; role: string; content: string; createdAt: Date; }[]> | NextResponse<{ chatId: string; chatTitle: string; createdAt: string; }[]> | NextResponse<...> | null' is not assignable to type 'void | Response'.
+          Type 'null' is not assignable to type 'void | Response'.
+
+  57 |         __return_type__: Response | void | never | Promise<Response | void | never>
+  58 |       },
+> 59 |       {
+     |       ^
+  60 |         __tag__: 'GET',
+  61 |         __return_type__: ReturnType<MaybeField<TEntry, 'GET'>>
+  62 |       },

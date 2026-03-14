@@ -52,6 +52,7 @@ export default function ClassroomPage() {
     const [classroom, setClassroom] = useState<Classroom | null>(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState("ask-ai");
+    const [activeAIDoubt, setActiveAIDoubt] = useState<any>(null);
     const [doubts, setDoubts] = useState<any[]>([]);
     const [doubtsLoading, setDoubtsLoading] = useState(false);
     const [isAskModalOpen, setIsAskModalOpen] = useState(false);
@@ -230,7 +231,11 @@ export default function ClassroomPage() {
                         <div className="space-y-8">
                             <h2 className="text-2xl font-black uppercase italic tracking-tight text-center">ASK <span className="text-blue-500">AI Teacher</span></h2>
                             <div className="max-w-3xl mx-auto">
-                                <AskAIView classroomId={Number(id)} onSuccess={() => fetchScopedDoubts('ai')} />
+                                <AskAIView 
+                                    classroomId={Number(id)} 
+                                    onSuccess={() => fetchScopedDoubts('ai')} 
+                                    initialDoubt={activeAIDoubt}
+                                />
                             </div>
                         </div>
 
@@ -249,7 +254,16 @@ export default function ClassroomPage() {
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                     {Array.isArray(doubts) && doubts.filter((d: any) => d.type === 'ai').map((doubt: any) => (
-                                        <DoubtCard key={doubt.id} doubt={doubt} role={classroom?.role} onUpdate={() => fetchScopedDoubts('ai')} />
+                                        <DoubtCard 
+                                            key={doubt.id} 
+                                            doubt={doubt} 
+                                            role={classroom?.role} 
+                                            onUpdate={() => fetchScopedDoubts('ai')} 
+                                            onViewAISolution={(d) => {
+                                                setActiveAIDoubt(d);
+                                                setActiveTab("ask-ai");
+                                            }}
+                                        />
                                     ))}
                                     {Array.isArray(doubts) && doubts.filter((d: any) => d.type === 'ai').length === 0 && (
                                         <div className="col-span-full py-12 text-center text-slate-500 text-xs font-bold uppercase tracking-widest opacity-30">
