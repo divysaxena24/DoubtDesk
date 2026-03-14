@@ -46,19 +46,21 @@ Return ONLY a JSON object: {"type": "concept" | "math"}`;
         // 3. Generate Appropriate Script
         let systemPrompt = "";
         if (videoType === 'math') {
-            systemPrompt = `Solve this mathematical problem step-by-step. Break it into 3-5 clear equations.
+            systemPrompt = `Solve this mathematical problem step-by-step. Break it into 5-10 clear, granular equations for complex problems.
+Explain every logical transition carefully.
 Each step must have:
 1. "equation": The LaTeX string for the step (e.g., "2x + 5 = 15"). Do NOT include $ signs.
-2. "text": A short spoken explanation for this step.
-3. "duration": 5-7 seconds.
+2. "text": A detailed spoken explanation for this step.
+3. "duration": 5-7 seconds per step.
 
 Return ONLY a JSON object with a "steps" array.`;
         } else {
-            systemPrompt = `Explain this concept clearly. Break it into exactly 3-4 slides.
+            systemPrompt = `Explain this concept comprehensively. Break it into 5-8 informative slides.
+Cover the definition, key principles, examples, and conclusion.
 Each slide must have:
-1. "title": A short title.
+1. "title": A descriptive title.
 2. "text": The explanation text to be narrated.
-3. "duration": 6-8 seconds.
+3. "duration": 6-10 seconds per slide.
 
 Return ONLY a JSON object with a "scenes" array.`;
         }

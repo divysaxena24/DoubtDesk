@@ -10,6 +10,12 @@ registerRoot(() => {
             fps={30}
             width={1920}
             height={1080}
+            calculateMetadata={async ({ props }: { props: any }) => {
+                const totalDuration = (props.scenes as any[]).reduce((acc, scene) => acc + Math.max(30, (scene.duration || 5) * 30), 0);
+                return {
+                    durationInFrames: totalDuration,
+                };
+            }}
             defaultProps={{
                 type: 'concept' as const,
                 scenes: [
