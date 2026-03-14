@@ -61,7 +61,8 @@ export const resumesTable = pgTable("resumes", {
 export const doubtsTable = pgTable("doubts", {
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
     userName: varchar({ length: 255 }).notNull(), // Randomly generated Student_XXX
-    subject: varchar({ length: 100 }).notNull(), // Math, Physics, Programming, Others
+    subject: varchar({ length: 100 }).notNull(),
+    subTopic: varchar({ length: 255 }), // Math, Physics, Programming, Others
     content: text(),
     imageUrl: text(),
     likes: integer().default(0),
