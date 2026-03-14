@@ -1,5 +1,6 @@
 import { db } from "@/configs/db";
 import { doubtsTable, likesTable, repliesTable } from "@/configs/schema";
+import { prioritizeDoubt, categorizeDoubt } from "@/lib/ai/categorizer";
 import { and, eq, desc } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
@@ -25,9 +26,9 @@ export async function GET(req: Request) {
             const userLikes = await db.select({ doubtId: likesTable.doubtId })
                 .from(likesTable)
                 .where(eq(likesTable.userName, userName));
-            
+
             const likedIds = new Set(userLikes.map(l => l.doubtId));
-            
+
             doubts = doubts.map(doubt => ({
                 ...doubt,
                 hasLiked: likedIds.has(doubt.id)
@@ -37,7 +38,7 @@ export async function GET(req: Request) {
         // Fetch reply counts
         const allReplies = await db.select({ doubtId: repliesTable.doubtId })
             .from(repliesTable);
-        
+
         const countsMap: Record<number, number> = {};
         allReplies.forEach(r => {
             countsMap[r.doubtId] = (countsMap[r.doubtId] || 0) + 1;
@@ -63,9 +64,13 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Missing required fields (provide text or image)" }, { status: 400 });
         }
 
+        // Auto-detect sub-topic using AI
+        const subTopic = await categorizeDoubt(content || "", subject, imageUrl);
+
         const newDoubt = await db.insert(doubtsTable).values({
             userName,
             subject,
+            subTopic,
             content,
             imageUrl,
         }).returning();
