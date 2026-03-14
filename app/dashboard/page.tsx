@@ -70,7 +70,7 @@ export default function Dashboard() {
                     </div>
                     
                     <div className="grid gap-4">
-                        {data?.trendingDoubts.map((doubt, i) => (
+                        {data?.trendingDoubts?.map((doubt, i) => (
                             <div key={doubt.id} className="group p-5 bg-white/5 border border-white/5 hover:border-cyan-500/30 rounded-2xl transition-all hover:bg-white/[0.08] backdrop-blur-xl flex flex-col gap-3">
                                 <div className="flex items-center justify-between">
                                     <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
@@ -96,7 +96,7 @@ export default function Dashboard() {
                     </div>
 
                     <div className="bg-slate-900/40 border border-white/5 rounded-3xl p-6 space-y-6 backdrop-blur-md">
-                        {data?.mostAskedTopics.map((topic, i) => (
+                        {data?.mostAskedTopics?.map((topic, i) => (
                             <div key={topic.subject} className="space-y-2">
                                 <div className="flex justify-between items-end">
                                     <span className="text-sm font-bold text-slate-300">{topic.subject}</span>
@@ -105,7 +105,7 @@ export default function Dashboard() {
                                 <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
                                     <div 
                                         className="h-full bg-gradient-to-r from-blue-600 to-cyan-500 transition-all duration-1000"
-                                        style={{ width: `${Math.min((topic.count / Math.max(...data.mostAskedTopics.map(t => t.count))) * 100, 100)}%` }}
+                                        style={{ width: `${Math.min((topic.count / Math.max(...(data?.mostAskedTopics?.map(t => t.count) || [1]))) * 100, 100)}%` }}
                                     ></div>
                                 </div>
                             </div>
@@ -119,7 +119,7 @@ export default function Dashboard() {
                             <span className="text-xs font-black uppercase tracking-tighter text-red-400">Student Weak Points</span>
                         </div>
                         <div className="space-y-3">
-                            {data?.weakTopics.slice(0, 2).map((topic) => (
+                            {data?.weakTopics?.slice(0, 2).map((topic) => (
                                 <div key={topic.subject} className="flex items-center gap-3 p-3 bg-red-500/10 rounded-xl border border-red-500/20">
                                     <div className="w-8 h-8 rounded-lg bg-red-500/20 flex items-center justify-center">
                                         <BookOpen className="w-4 h-4" />

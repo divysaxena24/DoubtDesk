@@ -2,18 +2,29 @@ import { NextRequest, NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/configs/db";
 import { usersTable } from "@/configs/schema";
-import { currentUser } from "@clerk/nextjs/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
 
 export async function POST(req: NextRequest) {
     try {
-        const clerkUser = await currentUser();
+        const { userId, sessionClaims } = await auth();
 
-        if (!clerkUser || !clerkUser.primaryEmailAddress?.emailAddress) {
+        if (!userId) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const email = clerkUser.primaryEmailAddress.emailAddress;
-        const name = clerkUser.fullName ?? "";
+        // Try to get email from session claims first
+        let email = (sessionClaims as any)?.email;
+        let name = (sessionClaims as any)?.full_name || (sessionClaims as any)?.name || "";
+
+        // Fallback to currentUser if email not in claims
+        if (!email) {
+            const clerkUser = await currentUser();
+            if (!clerkUser || !clerkUser.primaryEmailAddress?.emailAddress) {
+                return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+            }
+            email = clerkUser.primaryEmailAddress.emailAddress;
+            name = name || clerkUser.fullName || "";
+        }
 
         // =========================================================
         // ✅ DRIZZLE (NEON) — PRIMARY SOURCE OF TRUTH

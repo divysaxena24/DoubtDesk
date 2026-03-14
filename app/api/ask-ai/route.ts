@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import Groq from 'groq-sdk';
-import { currentUser } from '@clerk/nextjs/server';
+import { auth, currentUser } from '@clerk/nextjs/server';
 import { db } from '@/configs/db';
 import { doubtsTable, repliesTable } from '@/configs/schema';
 import { eq } from 'drizzle-orm';
@@ -52,11 +52,21 @@ async function callGroqWithFallback(messages: any[], isVision: boolean) {
 
 export async function POST(req: Request) {
     try {
-        const user = await currentUser();
-        if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        const { userId, sessionClaims } = await auth();
+        if (!userId) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        // Try to get name from claims, fallback to currentUser for full detail if needed for DB
+        let fullName = (sessionClaims as any)?.full_name || (sessionClaims as any)?.name || "";
+
+        if (!fullName) {
+             const user = await currentUser();
+             fullName = user?.fullName || "";
+        }
 
         const body = await req.json();
-        const { prompt, type = 'standard', imageBase64 } = body;
+        const { prompt, type = 'standard', imageBase64, classroomId } = body;
 
         if (!prompt && !imageBase64) {
             return NextResponse.json({ error: 'Prompt or image is required' }, { status: 400 });
@@ -112,10 +122,11 @@ ${prompt ? `Additional context from student: ${prompt}` : ''}`;
         // --- FULL PERSISTENCE LOGIC ---
         try {
             const [newDoubt] = await db.insert(doubtsTable).values({
-                userName: user.fullName || `Student_${Math.floor(Math.random() * 1000)}`,
+                userName: fullName || `Student_${Math.floor(Math.random() * 1000)}`,
                 subject: subject,
                 content: prompt || "Visual Inquiry",
                 imageUrl: imageBase64?.slice(0, 500),
+                classroomId: classroomId ? parseInt(classroomId.toString()) : null,
                 isSolved: "solved"
             }).returning();
 

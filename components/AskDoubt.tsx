@@ -9,9 +9,10 @@ interface AskDoubtProps {
     onClose: () => void;
     onSuccess: () => void;
     doubtToEdit?: any;
+    classroomId?: number | null;
 }
 
-export default function AskDoubt({ defaultSubject = "", isOpen, onClose, onSuccess, doubtToEdit }: AskDoubtProps) {
+export default function AskDoubt({ defaultSubject = "", isOpen, onClose, onSuccess, doubtToEdit, classroomId = null }: AskDoubtProps) {
     const [content, setContent] = useState(doubtToEdit?.content || "");
     const [subject, setSubject] = useState(doubtToEdit?.subject || defaultSubject);
     const [imageUrl, setImageUrl] = useState(doubtToEdit?.imageUrl || "");
@@ -61,7 +62,7 @@ export default function AskDoubt({ defaultSubject = "", isOpen, onClose, onSucce
             const method = doubtToEdit ? "PATCH" : "POST";
             const body = doubtToEdit 
                 ? { action: "edit", content, subject, imageUrl }
-                : { userName, subject, content, imageUrl };
+                : { userName, subject, content, imageUrl, classroomId };
 
             const res = await fetch(url, {
                 method,

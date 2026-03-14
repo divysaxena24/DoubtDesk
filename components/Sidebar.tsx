@@ -17,11 +17,13 @@ import {
     BookOpen,
     Code,
     MoreHorizontal,
-    Zap
+    Zap,
+    School
 } from 'lucide-react'
 
 const menuItems = [
     { name: 'Dashboard', icon: LayoutDashboard, href: '/dashboard' },
+    { name: 'Virtual Campus', icon: School, href: '/rooms' },
 ]
 
 interface SidebarProps {

@@ -1,30 +1,48 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/configs/db';
 import { doubtsTable } from '@/configs/schema';
-import { desc, sql } from 'drizzle-orm';
+import { desc, sql, and, isNull, eq } from 'drizzle-orm';
 
-export async function GET() {
+export async function GET(req: Request) {
+    const { searchParams } = new URL(req.url);
+    const classroomIdStr = searchParams.get("classroomId");
+    const classroomId = classroomIdStr ? parseInt(classroomIdStr) : null;
+
     try {
-        // 1. Trending Doubts (Most recent unique contents)
+        let trendingConditions = [];
+        let askedConditions = [];
+
+        if (classroomId) {
+            trendingConditions.push(eq(doubtsTable.classroomId, classroomId));
+            askedConditions.push(eq(doubtsTable.classroomId, classroomId));
+        } else {
+            trendingConditions.push(isNull(doubtsTable.classroomId));
+            askedConditions.push(isNull(doubtsTable.classroomId));
+        }
+
+        // 1. Trending Doubts
         const trendingDoubts = await db.select({
             id: doubtsTable.id,
             content: doubtsTable.content,
             subject: doubtsTable.subject,
             createdAt: doubtsTable.createdAt
         })
-        .from(doubtsTable)
-        .orderBy(desc(doubtsTable.createdAt))
-        .limit(5);
+            .from(doubtsTable)
+            .where(and(...trendingConditions))
+            .orderBy(desc(doubtsTable.createdAt))
+            .limit(5);
 
-        // 2. Most Asked Topics (Group by subject and count)
+        // 2. Most Asked Topics
+        const countField = sql<number>`count(${doubtsTable.id})`;
         const mostAskedTopics = await db.select({
             subject: doubtsTable.subject,
-            count: sql<number>`count(${doubtsTable.id})`.as('count')
+            count: countField.as('count')
         })
-        .from(doubtsTable)
-        .groupBy(doubtsTable.subject)
-        .orderBy(desc(sql`count`))
-        .limit(5);
+            .from(doubtsTable)
+            .where(and(...askedConditions))
+            .groupBy(doubtsTable.subject)
+            .orderBy(desc(sql`count`))
+            .limit(5);
 
         // 3. Weak Topics (Just the high volume ones for now, or could be others)
         // Let's just return the same but labeled differently or with more data
@@ -41,9 +59,10 @@ export async function GET() {
 
     } catch (error: any) {
         console.error('Error fetching analytics:', error);
-        return NextResponse.json(
-            { error: 'Failed to fetch analytics data' },
-            { status: 500 }
-        );
+        return NextResponse.json({
+            trendingDoubts: [],
+            mostAskedTopics: [],
+            weakTopics: []
+        });
     }
 }

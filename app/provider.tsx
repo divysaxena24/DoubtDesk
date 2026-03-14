@@ -6,8 +6,11 @@ export type AppUser = {
     id: string;
     name: string;
     email: string;
-    supabase?: any; // if your API returns supabase payload too
-    supabaseError?: string | null;
+    university?: string;
+    year?: string;
+    collegeEmail?: string;
+    role?: string;
+    onboarded?: boolean;
 };
 
 type UserContextType = {
@@ -23,12 +26,14 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 const USER_ENDPOINT = "/api/user";
 
 import SessionTracker from "@/components/auth/SessionTracker";
-
 import { Toaster } from "sonner";
+import { useRouter, usePathname } from "next/navigation";
 
 export function Provider({ children }: { children: React.ReactNode }) {
     const [appUser, setAppUser] = useState<AppUser | null>(null);
     const [loading, setLoading] = useState(true);
+    const router = useRouter();
+    const pathname = usePathname();
 
     async function refresh() {
         setLoading(true);
@@ -36,13 +41,11 @@ export function Provider({ children }: { children: React.ReactNode }) {
             const res = await fetch(USER_ENDPOINT, {
                 method: "POST",
                 headers: { "content-type": "application/json" },
-                // body not needed since server reads currentUser() from Clerk
             });
 
             const data = await res.json().catch(() => null);
 
             if (!res.ok) {
-                // if unauthorized or server error, just clear state
                 setAppUser(null);
                 return;
             }
@@ -58,6 +61,16 @@ export function Provider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
         void refresh();
     }, []);
+
+    useEffect(() => {
+        if (!loading && appUser && !appUser.onboarded) {
+            const publicPaths = ['/onboarding', '/sign-in', '/sign-up', '/', '/public-rooms'];
+            const isPublic = publicPaths.some(path => pathname === path || pathname.startsWith('/public-rooms'));
+            if (!isPublic) {
+                router.push("/onboarding");
+            }
+        }
+    }, [appUser, loading, pathname]);
 
     return (
         <UserContext.Provider value={{ appUser, setAppUser, loading, refresh }}>

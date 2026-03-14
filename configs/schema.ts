@@ -1,9 +1,33 @@
-import { integer, pgTable, varchar, text, timestamp } from "drizzle-orm/pg-core";
+import { integer, pgTable, varchar, text, timestamp, boolean } from "drizzle-orm/pg-core";
 
 export const usersTable = pgTable("users", {
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
     name: varchar({ length: 255 }).notNull(),
     email: varchar({ length: 255 }).notNull().unique(),
+    university: varchar({ length: 255 }),
+    year: varchar({ length: 50 }),
+    collegeEmail: varchar({ length: 255 }),
+    role: varchar({ length: 20 }), // 'student', 'teacher', 'admin'
+    onboarded: boolean().default(false),
+    createdAt: timestamp().defaultNow().notNull(),
+});
+
+export const classroomsTable = pgTable("classrooms", {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    name: varchar({ length: 255 }).notNull(),
+    university: varchar({ length: 255 }).notNull(),
+    year: varchar({ length: 50 }).notNull(),
+    teacherEmail: varchar({ length: 255 }).notNull(),
+    inviteCode: varchar({ length: 10 }).notNull().unique(),
+    createdAt: timestamp().defaultNow().notNull(),
+});
+
+export const membershipsTable = pgTable("memberships", {
+    id: integer().primaryKey().generatedAlwaysAsIdentity(),
+    userEmail: varchar({ length: 255 }).notNull(),
+    classroomId: integer().notNull(),
+    role: varchar({ length: 20 }).notNull(), // 'student', 'teacher', 'admin'
+    joinedAt: timestamp().defaultNow().notNull(),
 });
 
 export const chatHistoryTable = pgTable("chat_history", {
@@ -61,6 +85,7 @@ export const resumesTable = pgTable("resumes", {
 export const doubtsTable = pgTable("doubts", {
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
     userName: varchar({ length: 255 }).notNull(), // Randomly generated Student_XXX
+    classroomId: integer(), // Null for public, or ID for classroom-specific
     subject: varchar({ length: 100 }).notNull(), // Math, Physics, Programming, Others
     content: text(),
     imageUrl: text(),
