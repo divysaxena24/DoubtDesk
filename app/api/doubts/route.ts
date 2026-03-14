@@ -82,14 +82,15 @@ export async function GET(req: Request) {
             }));
         }
 
-        // Fetch reply counts
-        const allReplies = await db.select({ doubtId: repliesTable.doubtId })
-            .from(repliesTable);
-        
-        const countsMap: Record<number, number> = {};
-        allReplies.forEach(r => {
-            countsMap[r.doubtId] = (countsMap[r.doubtId] || 0) + 1;
-        });
+        // Fetch reply counts using an aggregate query
+        const replyCounts = await db.select({
+            doubtId: repliesTable.doubtId,
+            count: db.$count(repliesTable)
+        })
+        .from(repliesTable)
+        .groupBy(repliesTable.doubtId);
+
+        const countsMap = Object.fromEntries(replyCounts.map(r => [r.doubtId, r.count]));
 
         doubts = doubts.map(doubt => ({
             ...doubt,

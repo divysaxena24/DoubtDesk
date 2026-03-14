@@ -1,4 +1,4 @@
-import { integer, pgTable, varchar, text, timestamp, boolean } from "drizzle-orm/pg-core";
+import { integer, pgTable, varchar, text, timestamp, boolean, index } from "drizzle-orm/pg-core";
 
 export const usersTable = pgTable("users", {
     id: integer().primaryKey().generatedAlwaysAsIdentity(),
@@ -28,6 +28,11 @@ export const membershipsTable = pgTable("memberships", {
     classroomId: integer().notNull(),
     role: varchar({ length: 20 }).notNull(), // 'student', 'teacher', 'admin'
     joinedAt: timestamp().defaultNow().notNull(),
+}, (table) => {
+    return {
+        userEmailIndex: index("userEmail_idx").on(table.userEmail),
+        classroomIdIndex: index("classroomId_idx").on(table.classroomId),
+    };
 });
 
 export const chatHistoryTable = pgTable("chat_history", {
@@ -95,6 +100,12 @@ export const doubtsTable = pgTable("doubts", {
     solvedReplyId: integer(), // ID of the specific reply that solved it
     type: varchar({ length: 20 }).default("community"), // 'ai', 'community', 'teacher'
     createdAt: timestamp().defaultNow().notNull(),
+}, (table) => {
+    return {
+        classroomIdIndex: index("doubt_classroomId_idx").on(table.classroomId),
+        typeIndex: index("type_idx").on(table.type),
+        subjectIndex: index("subject_idx").on(table.subject),
+    };
 });
 
 export const likesTable = pgTable("likes", {
